@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "156316734218",
+    "project_id": "cloudlist-bbb0d",
+    "storage_bucket": "cloudlist-bbb0d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156316734218:android:1665597e8740189524e0f3",
+        "android_client_info": {
+          "package_name": "com.victorartonomy.cloudlist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCno6M5hFuym3zEucywlC7DY-rxkYKy8SQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
