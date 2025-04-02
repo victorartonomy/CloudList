@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudlist/services/firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../util/todo_list.dart';
@@ -21,6 +23,8 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final _textController = TextEditingController();
+
+  final FirestoreServices firestoreService = FirestoreServices();
 
   void onClick() {
     showDialog(
@@ -48,7 +52,9 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
             onPressed: () => {
+              firestoreService.addNote(_textController.text, false),
               onAdd(_textController),
+              _textController.clear(),
               Navigator.pop(context)
             },
             child: Text("Add"),
@@ -140,17 +146,33 @@ class _HomePageState extends State<HomePage> {
       ),
 
       //Body
-      body: ListView.builder(
-        itemCount: _todo.length,
-        itemBuilder: (BuildContext context, int index){
-          return TodoList(
-            checked: _todo[index][1],
-            title: _todo[index][0],
-            onCheck: (value) => onCheck(value, index),
-            onDelete: (context) => onDelete(index),
-            onUpdate: (context) => onClickUpdate(index),
-          );
-        },
+      body: StreamBuilder<QuerySnapshot>(
+          stream: firestoreService.getNotesStream(),
+          builder: (context, snapshot) {
+            if(snapshot.hasData) {
+              List notesList = snapshot.data!.docs;
+
+              return ListView.builder(
+                itemCount: notesList.length,
+                  itemBuilder: (context, index) {
+                    //Get individual document
+                    DocumentSnapshot document = notesList[index];
+                    //String docID = document.id;
+
+                    //Get notes from document
+                    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                    String noteText = data['note'];
+
+                    //Display notes
+                    return TodoList(
+                      title: noteText,
+                    );
+                  }
+              );
+            } else {
+              return const Text("No Notes");
+            }
+          }
       ),
 
       //Floating Action Button
