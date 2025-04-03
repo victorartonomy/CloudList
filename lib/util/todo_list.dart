@@ -1,3 +1,4 @@
+import 'package:cloudlist/services/firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -38,7 +39,10 @@ class TodoList extends StatelessWidget {
           motion: StretchMotion(),
           children: [
             SlidableAction(
-              onPressed: (value) {},
+              onPressed: (value) {
+                FirestoreServices firestoreServices = FirestoreServices();
+                firestoreServices.deleteNote(docID);
+              },
               backgroundColor: Colors.red,
               icon: Icons.delete,
               borderRadius: BorderRadius.circular(12),
