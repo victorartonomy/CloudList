@@ -19,6 +19,9 @@ class TodoList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    FirestoreServices firestoreServices = FirestoreServices();
+
     return Padding(
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
       child: Slidable(
@@ -40,7 +43,7 @@ class TodoList extends StatelessWidget {
           children: [
             SlidableAction(
               onPressed: (value) {
-                FirestoreServices firestoreServices = FirestoreServices();
+
                 firestoreServices.deleteNote(docID);
               },
               backgroundColor: Colors.red,
@@ -64,7 +67,9 @@ class TodoList extends StatelessWidget {
                   flex: 1,
                   child: Checkbox(
                     value: checked,
-                    onChanged: (value) {},
+                    onChanged: (value) {
+                      firestoreServices.updateNote(docID, title, value!);
+                    },
                   )
               ),
 

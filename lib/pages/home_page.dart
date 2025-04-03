@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
           TextButton(
             onPressed: () => {
               if (docID != null) {
-                firestoreServices.updateNote(docID, textController.text),
+                firestoreServices.updateNote(docID, textController.text, false),
               } else
                 {
                   firestoreServices.addNote(textController.text, false),
