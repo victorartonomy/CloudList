@@ -1,50 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudlist/services/firestore.dart';
+import 'package:cloudlist/util/todo_list.dart';
 import 'package:flutter/material.dart';
 
-import '../util/todo_list.dart';
-
 class HomePage extends StatefulWidget {
-
-
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final List _todo = [
-    ["Welcome to Cloud List", false],
-    ["Click on + to Add a list", false],
-    ["Click on Checkbox to mark as Complete", false],
-    ["Swipe left to delete", false],
-    ["Swipe right to edit", false],
-  ];
+  final TextEditingController textController = TextEditingController();
 
-  final _textController = TextEditingController();
+  FirestoreServices firestoreServices = FirestoreServices();
 
-  final FirestoreServices firestoreService = FirestoreServices();
-
-  void onClick() {
+  void openDialogBox(String? docID) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.yellow[200],
-        title: Text("Add a New Task"),
+
+        //Title
+        title: Text("Add a Note"),
+
+        //TextField
         content: TextField(
-          controller: _textController,
+          controller: textController,
           decoration: InputDecoration(
             hintText: "Enter task",
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: Icon(Icons.clear),
               onPressed: () {
-                _textController.clear();
+                textController.clear();
               },
             ),
           ),
         ),
+
+        //Cancel and Save
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -52,9 +46,13 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
             onPressed: () => {
-              firestoreService.addNote(_textController.text, false),
-              onAdd(_textController),
-              _textController.clear(),
+              if (docID != null) {
+                firestoreServices.updateNote(docID, textController.text),
+              } else
+                {
+                  firestoreServices.addNote(textController.text, false),
+                  textController.clear(),
+                },
               Navigator.pop(context)
             },
             child: Text("Add"),
@@ -62,68 +60,6 @@ class _HomePageState extends State<HomePage> {
         ],
       )
     );
-  }
-
-  void onClickUpdate(int index) {
-    showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          backgroundColor: Colors.yellow[200],
-          title: Text("Edit Task"),
-          content: TextField(
-            controller: _textController,
-            decoration: InputDecoration(
-              hintText: "Enter task",
-              border: const OutlineInputBorder(),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  onUpdate(index);
-                },
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                  onUpdate(index);
-                  Navigator.pop(context);
-              },
-              child: Text("Edit"),
-            )
-          ],
-        )
-    );
-  }
-
-  void onAdd(textController) {
-    setState(() {
-      _todo.add([textController.text, false]);
-    });
-  }
-
-  //Update Check
-  void onCheck(bool? value, int index) {
-    setState(() {
-      _todo[index][1] = !_todo[index][1];
-    });
-  }
-
-  //Delete tile
-  void onDelete(int index) {
-    setState(() {
-      _todo.removeAt(index);
-    });
-  }
-
-  void onUpdate(int index) {
-    setState(() {
-      _todo[index][0] = _textController.text;
-    });
   }
 
   @override
@@ -146,38 +82,47 @@ class _HomePageState extends State<HomePage> {
       ),
 
       //Body
-      body: StreamBuilder<QuerySnapshot>(
-          stream: firestoreService.getNotesStream(),
-          builder: (context, snapshot) {
-            if(snapshot.hasData) {
-              List notesList = snapshot.data!.docs;
+      body: StreamBuilder(
+        stream: firestoreServices.getNotesStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            //Get all docs
+            List notes = snapshot.data!.docs;
 
-              return ListView.builder(
-                itemCount: notesList.length,
-                  itemBuilder: (context, index) {
-                    //Get individual document
-                    DocumentSnapshot document = notesList[index];
-                    //String docID = document.id;
+            //Display in a list
+            return ListView.builder(
+              itemCount: notes.length,
+              itemBuilder: (context, index) {
+                
+                //Get individual doc
+                DocumentSnapshot doc = notes[index];
+                String docID = doc.id;
 
-                    //Get notes from document
-                    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                    String noteText = data['note'];
+                //Get data from doc
+                Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                String note = data['note'];
+                bool check = data['isComplete'];
 
-                    //Display notes
-                    return TodoList(
-                      title: noteText,
-                    );
-                  }
-              );
-            } else {
-              return const Text("No Notes");
-            }
+                //Display
+                return TodoList(
+                  title: note,
+                  checked: check,
+                  docID: docID,
+                  openDialogBox: openDialogBox,
+                );
+              }
+            );
+          } else {
+            return const Text("No Notes");
           }
+        },
       ),
 
       //Floating Action Button
       floatingActionButton: FloatingActionButton(
-        onPressed: onClick,
+        onPressed: () {
+          openDialogBox(null);
+        },
         backgroundColor: Colors.yellow,
         child: Icon(Icons.add),
       ),

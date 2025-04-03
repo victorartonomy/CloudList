@@ -5,17 +5,15 @@ class TodoList extends StatelessWidget {
 
   final String title;
   final bool checked;
-  final void Function(bool?)? onCheck;
-  final void Function(BuildContext)? onDelete;
-  final void Function(BuildContext)? onUpdate;
+  final String docID;
+  final void Function(String? docID) openDialogBox;
 
   const TodoList({
     super.key,
     this.checked = false,
     required this.title,
-    this.onCheck,
-    this.onDelete,
-    this.onUpdate
+    required this.docID,
+    required this.openDialogBox,
   });
 
   @override
@@ -27,7 +25,9 @@ class TodoList extends StatelessWidget {
           motion: StretchMotion(),
           children: [
             SlidableAction(
-              onPressed: onUpdate,
+              onPressed: (value) {
+                openDialogBox(docID);
+              },
               backgroundColor: Colors.green,
               icon: Icons.edit,
               borderRadius: BorderRadius.circular(12),
@@ -38,7 +38,7 @@ class TodoList extends StatelessWidget {
           motion: StretchMotion(),
           children: [
             SlidableAction(
-              onPressed: onDelete,
+              onPressed: (value) {},
               backgroundColor: Colors.red,
               icon: Icons.delete,
               borderRadius: BorderRadius.circular(12),
@@ -59,8 +59,8 @@ class TodoList extends StatelessWidget {
               Flexible(
                   flex: 1,
                   child: Checkbox(
-                      value: checked,
-                      onChanged: onCheck
+                    value: checked,
+                    onChanged: (value) {},
                   )
               ),
 
